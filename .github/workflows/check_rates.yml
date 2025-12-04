@@ -22,6 +22,7 @@ jobs:
       run: |
         pip install requests
         pip install playwright
+        playwright install
 
     - name: Run rate checker
       env:

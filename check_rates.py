@@ -10,7 +10,6 @@ import config
 # -----------------------
 def send_sms(body):
     msg = EmailMessage()
-    msg["Subject"] = "Refinance Rate Alert"
     msg["From"] = config.FROM_EMAIL
     msg["To"] = config.TO_SMS
     msg.set_content(body)
@@ -90,10 +89,7 @@ async def main():
 
     # Build table
     body_lines = []
-    header = f"{'Loan Type':<25} | {'Term':<15} | {'APR':<6}"
-    separator = "-" * len(header)
-    body_lines.append(header)
-    body_lines.append(separator)
+    body_lines.append("Refi Rates:")
 
     for rate in rates:
         loan_type = rate['loan_type'].replace("- Refi", "").strip()
@@ -105,9 +101,9 @@ async def main():
         # Skip exactly 5 year loans
         if term_number == "5":
             continue
-        body_lines.append(f"{loan_type:<20} | {term_number:<5} | {rate['rate']:<6.3f}")
+        body_lines.append(f"{loan_type} {term}yr {rate_str}")
 
-    body_text = "\r\n".join(body_lines)
+    body_text = "\n".join(body_lines)
     print(body_text)  # For testing
     # Uncomment the next line to send SMS after testing
     send_sms(body_text)

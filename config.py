@@ -4,10 +4,10 @@ import os
 THRESHOLD = float(os.environ["THRESHOLD"])
 
 # Sender email (Gmail)
-FROM_EMAIL = os.environ["GMAIL_ADDRESS"]
+FROM_EMAIL = os.environ["FROM_EMAIL"]
 
 # Gmail App Password
-APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
+APP_PASSWORD = os.environ["APP_PASSWORD"]
 
 # Verizon SMS gateway address (5551234567@vtext.com)
 TO_SMS = os.environ["VERIZON_SMS"]

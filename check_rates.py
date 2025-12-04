@@ -107,7 +107,7 @@ async def main():
             continue
         body_lines.append(f"{loan_type:<20} | {term_number:<5} | {rate['rate']:<6.3f}")
 
-    body_text = "\n".join(body_lines)
+    body_text = "\r\n".join(body_lines)
     print(body_text)  # For testing
     # Uncomment the next line to send SMS after testing
     send_sms(body_text)

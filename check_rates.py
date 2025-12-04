@@ -110,7 +110,7 @@ async def main():
     body_text = "\n".join(body_lines)
     print(body_text)  # For testing
     # Uncomment the next line to send SMS after testing
-    # send_sms(body_text)
+    send_sms(body_text)
 
 # Run the async main
 if __name__ == "__main__":

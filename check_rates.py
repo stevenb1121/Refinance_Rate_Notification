@@ -80,7 +80,7 @@ body_lines.append(separator)
 for rate in rates:
     body_lines.append(f"{rate['loan_type']:<20} | {rate['term']:<10} | {rate['rate']:<6.3f}")
 
-send_sms("\n".join(body_lines)
+send_sms("\n".join(body_lines))
 
 if __name__ == "__main__":
     main()

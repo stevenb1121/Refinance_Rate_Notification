@@ -19,10 +19,10 @@ def parse_sources_from_html(html_text):
     soup = BeautifulSoup(html_text, "html.parser")
     results = []
 
-    iframe_blocks = soup.find_all("iframe", class_="rfcu-iframe__iframe")
-    for block in iframe_blocks:
+    src_blocks = soup.find_all("div", class_="rfcu-iframe")
+    for block in src_blocks:
         try:
-            src = block["src"]
+            src = block["data-src"]
             results.append(src)
         except Exception:
             continue

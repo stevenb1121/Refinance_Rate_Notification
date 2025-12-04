@@ -101,7 +101,7 @@ async def main():
         # Skip exactly 5 year loans
         if term_number == "5":
             continue
-        body_lines.append(f"{loan_type} {term}yr {rate_str}")
+        body_lines.append(f"{loan_type} {term}yr {rate['rate_str']}")
 
     body_text = "\n".join(body_lines)
     print(body_text)  # For testing

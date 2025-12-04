@@ -97,7 +97,7 @@ async def main():
         if "Conventional" in loan_type:
             lt = "CONV"
         elif "VA" in loan_type:
-            lt = "VA"
+            lt = "VA••"
         else:
             lt = loan_type[:4].upper()
 
@@ -116,7 +116,7 @@ async def main():
         # {lt:<6}    -> loan type left-aligned in 6 chars
         # {term_number:>2}yr -> term number right-aligned in 2 chars, followed by "yr"
         # {rate_str:>7} -> rate right-aligned in 7 chars
-        line = f"{lt:<6}{term_number:>2}yr   {rate_str:>7}"
+        line = f"{lt}••{term_number}yr••{rate_str}"
         body_lines.append(line)
 
     body_text = "\n".join(body_lines)

@@ -95,7 +95,16 @@ async def main():
     body_lines.append(separator)
 
     for rate in rates:
-        body_lines.append(f"{rate['loan_type']:<25} | {rate['term']:<15} | {rate['rate']:<6.3f}")
+        loan_type = rate['loan_type'].replace("- Refi", "").strip()
+        term = rate['term']
+        # Extract just the number of years from the term
+        match = re.search(r'(\d+)', term)
+        term_number = match.group(1) if match else term
+        
+        # Skip exactly 5 year loans
+        if term_number == "5":
+            continue
+        body_lines.append(f"{loan_type:<20} | {term_number:<5} | {rate['rate']:<6.3f}")
 
     body_text = "\n".join(body_lines)
     print(body_text)  # For testing

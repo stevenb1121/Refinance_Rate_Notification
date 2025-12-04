@@ -97,7 +97,7 @@ async def main():
         if "Conventional" in loan_type:
             lt = "CONV"
         elif "VA" in loan_type:
-            lt = "VA••"
+            lt = "VA••••"
         else:
             lt = loan_type[:4].upper()
 

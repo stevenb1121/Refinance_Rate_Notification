@@ -1,0 +1,5 @@
+- name: Test Gmail SMTP login
+  run: python3 test_gmail_login.py
+  env:
+    FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+    APP_PASSWORD: ${{ secrets.APP_PASSWORD }}

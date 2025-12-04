@@ -1,9 +1,12 @@
-import requests
-from bs4 import BeautifulSoup
-import smtplib
+import asyncio
+from playwright.async_api import async_playwright
 from email.message import EmailMessage
+import smtplib
 import config
 
+# -----------------------
+# SMS sender
+# -----------------------
 def send_sms(body):
     msg = EmailMessage()
     msg["Subject"] = "Refinance Rate Alert"
@@ -15,64 +18,63 @@ def send_sms(body):
         smtp.login(config.FROM_EMAIL, config.APP_PASSWORD)
         smtp.send_message(msg)
 
-def parse_sources_from_html(html_text):
-    soup = BeautifulSoup(html_text, "html.parser")
-    results = []
-
-    src_blocks = soup.find_all("div", class_="rfcu-iframe")
-    for block in src_blocks:
-        try:
-            src = block["data-src"]
-            results.append(src)
-        except Exception:
-            continue
-
-    return results
-
-def parse_rates_from_html(html_text):
-    soup = BeautifulSoup(html_text, "html.parser")
-    results = []
-
-    loan_type_elem = soup.find("div", class_="widgetHeaderTitle")
-    loan_type = loan_type_elem.get_text(strip=True) if loan_type_elem else "Loan"
-
-    rate_blocks = soup.find_all("div", class_="panel innerContainer")
-    for block in rate_blocks:
-        try:
-            term = block.find("div", class_="innerHeadingTitle_small").get_text(strip=True)
-            rate_str = block.find("a", class_="ng-binding").get_text(strip=True)
-            rate = float(rate_str.rstrip("%"))
-            results.append({
-                "loan_type": loan_type,
-                "term": term,
-                "rate_str": rate_str,
-                "rate": rate
-            })
-        except Exception:
-            continue
-
-    return results
-
-def main():
+# -----------------------
+# Scraper function
+# -----------------------
+async def scrape_refinance_rates():
     url = "https://www.redfcu.org/personal/loans/mortgages/refinance/"
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        print("Error fetching page:", resp.status_code)
-        return
-
-    srcs = parse_sources_from_html(resp.text)
-    if not srcs:
-        print("No sources found — check your HTML selectors.")
-        return
-
     rates = []
-    for src in srcs:
-        iframe_resp = requests.get(src)
-        if iframe_resp.status_code == 200:
-            rates.extend(parse_rates_from_html(iframe_resp.text))
 
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto(url)
+
+        # Wait for the iframe to appear
+        iframe_elem = await page.wait_for_selector("iframe.rfcu-iframe__iframe", timeout=10000)
+        iframe = await iframe_elem.content_frame()
+
+        if not iframe:
+            print("Iframe not found")
+            await browser.close()
+            return []
+
+        # Wait for rate panels inside the iframe
+        await iframe.wait_for_selector("div.panel.innerContainer", timeout=10000)
+        rate_blocks = await iframe.query_selector_all("div.panel.innerContainer")
+
+        # Extract rates
+        loan_type_elem = await iframe.query_selector("div.widgetHeaderTitle")
+        loan_type = await loan_type_elem.inner_text() if loan_type_elem else "Loan"
+
+        for block in rate_blocks:
+            try:
+                term_elem = await block.query_selector("div.innerHeadingTitle_small")
+                term = await term_elem.inner_text() if term_elem else "Unknown"
+
+                rate_elem = await block.query_selector("a.ng-binding")
+                rate_str = await rate_elem.inner_text() if rate_elem else "0"
+                rate = float(rate_str.rstrip("%"))
+
+                rates.append({
+                    "loan_type": loan_type,
+                    "term": term,
+                    "rate_str": rate_str,
+                    "rate": rate
+                })
+            except Exception:
+                continue
+
+        await browser.close()
+    return rates
+
+# -----------------------
+# Main
+# -----------------------
+async def main():
+    rates = await scrape_refinance_rates()
     if not rates:
-        print("No rates found in iframe content.")
+        print("No rates found")
         return
 
     # Build table
@@ -87,8 +89,9 @@ def main():
 
     body_text = "\n".join(body_lines)
     print(body_text)  # For testing
-    # Uncomment to send SMS after testing
+    # Uncomment the next line to send SMS after testing
     # send_sms(body_text)
 
+# Run the async main
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

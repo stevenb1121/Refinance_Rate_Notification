@@ -26,5 +26,5 @@ jobs:
         GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         VERIZON_SMS: ${{ secrets.VERIZON_SMS }}
-        THRESHOLD: ${{ secrets.THRESHOLD }}
+        THRESHOLD: ${{ vars.THRESHOLD }}
       run: python3 check_rates.py

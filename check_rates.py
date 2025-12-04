@@ -88,23 +88,39 @@ async def main():
         return
 
     # Build table
-    body_lines = []
-    body_lines.append("Refi Rates:")
+    body_lines = ["Refi Rates:"]
 
     for rate in rates:
         loan_type = rate['loan_type'].replace("- Refi", "").strip()
-        term = rate['term']
-        # Extract just the number of years from the term
-        match = re.search(r'(\d+)', term)
-        term_number = match.group(1) if match else term
-        
-        # Skip exactly 5 year loans
+
+        # Normalize loan_type → CONV or VA
+        if "Conventional" in loan_type:
+            lt = "CONV"
+        elif "VA" in loan_type:
+            lt = "VA"
+        else:
+            lt = loan_type[:4].upper()
+
+        # Extract only digits from term
+        match = re.search(r'(\d+)', rate['term'])
+        term_number = match.group(1) if match else ""
+
+        # Skip 5-year terms
         if term_number == "5":
             continue
-        body_lines.append(f"{loan_type} {term_number}yr {rate['rate_str']}")
+
+        # Use the original rate string (includes %). Right-align rate in 7 chars.
+        rate_str = rate['rate_str']
+
+        # Build a perfectly aligned row:
+        # {lt:<6}    -> loan type left-aligned in 6 chars
+        # {term_number:>2}yr -> term number right-aligned in 2 chars, followed by "yr"
+        # {rate_str:>7} -> rate right-aligned in 7 chars
+        line = f"{lt:<6}{term_number:>2}yr   {rate_str:>7}"
+        body_lines.append(line)
 
     body_text = "\n".join(body_lines)
-    print(body_text)  # For testing
+    print(body_text)
     # Uncomment the next line to send SMS after testing
     send_sms(body_text)
 

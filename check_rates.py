@@ -1,4 +1,5 @@
 import asyncio
+import re
 from playwright.async_api import async_playwright
 from email.message import EmailMessage
 import smtplib
